@@ -62,10 +62,12 @@ class GameOfLife:
         cells = np.zeros((dimy, dimx))
 
         if random:
+            # random start
             cells = self.randomGrid(dimx, dimy)
         else:
+            # start with 2 basic things
             self.rules.addGosperGliderGun(5,5, cells)
-            self.rules.addGlider(20, 50, cells)
+            self.rules.addGlider(20, 70, cells)
 
         self.cells = cells
     def randomGrid(self, dimx, dimy):
@@ -74,33 +76,40 @@ class GameOfLife:
 
     def start(self):
         pygame.init()
+        # pygame screen
         surface = pygame.display.set_mode((self.dimx * self.cellsize, self.dimy * self.cellsize))
         pygame.display.set_caption("John Conway's Game of Life")
 
+        # game board
         cells = self.cells
 
+        # game loop
         while True:
             for event in pygame.event.get():
+                # quit game
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-
+            # update screen
             surface.fill(col_grid)
             cells = self.update(surface, cells, self.cellsize)
             pygame.display.update()
-
+    # update board
     def update(self, surface, cur, sz):
         nxt = np.zeros((cur.shape[0], cur.shape[1]))
 
         for r, c in np.ndindex(cur.shape):
             num_alive = np.sum(cur[r - 1:r + 2, c - 1:c + 2]) - cur[r, c]
-
+            # apply game rules
             if self.rules.DieRule(cur[r, c], num_alive):
+                # set color to dying color
                 col = col_about_to_die
             elif self.rules.BirthRule(cur[r, c], num_alive):
+                # make alive and set color to alive
                 nxt[r, c] = 1
                 col = col_alive
             col = col if cur[r, c] == 1 else col_background
+            # draw the cell in its next state
             pygame.draw.rect(surface, col, (c * sz, r * sz, sz - 1, sz - 1))
 
         return nxt
